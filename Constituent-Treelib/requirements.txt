@@ -1,0 +1,16 @@
+benepar
+contractions
+langid
+huspacy
+nltk
+pdfkit
+pytest
+spacy
+streamlit
+torch
+Wand
+tokenizers
+transformers
+protobuf==3.20.3
+svgling
+ipython

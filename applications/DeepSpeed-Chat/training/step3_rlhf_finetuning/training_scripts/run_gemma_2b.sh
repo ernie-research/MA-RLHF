@@ -17,7 +17,7 @@ deepspeed --num_gpus 8 --master_port 1234 main.py \
    --generation_batches 1 \
    --ppo_epochs 1 \
    --max_answer_seq_len 512 \
-   --max_prompt_seq_len 1024 \
+   --max_prompt_seq_len 512 \
    --actor_learning_rate ${Actor_Lr} \
    --critic_learning_rate ${Critic_Lr} \
    --actor_weight_decay 0.1 \
