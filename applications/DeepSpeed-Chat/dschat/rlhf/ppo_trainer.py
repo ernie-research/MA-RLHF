@@ -182,11 +182,15 @@ class DeepSpeedPPOTrainer():
 
         ppl = []
         if self.termination_condition == 'ppl':
-            for i in range(prompts.size(1) - 1, logits_ref.size(1)):
-                shift_logits = logits_ref[:, :i - 1, :].contiguous().view(-1, self.config.vocab_size)
-                shift_labels = seq[:, 1:i, :].contiguous.view(-1)
-                loss = F.cross_entropy(shift_logits, shift_labels, ignore_index=pad_token_id)
-                ppl.append(torch.exp(loss))
+            shift_logits = logits_ref[..., :-1, :].contiguous()
+            shift_labels = seq[..., 1:].contiguous()
+            shift_logits_flat = shift_logits.view(-1, shift_logits.size(-1))
+            shift_labels_flat = shift_labels.view(-1)
+            
+            loss_per_token = F.cross_entropy(shift_logits_flat, shift_labels_flat, reduction='none', ignore_index=pad_token_id)
+            loss_per_token = loss_per_token.view(shift_labels.size())
+            ppl_per_position = torch.exp(loss_per_token)
+            ppl = ppl_per_position[0].tolist()[prompts.size(-1) - 1:]
 
         self.generate_time = generate_end - generate_start
 
@@ -199,7 +203,7 @@ class DeepSpeedPPOTrainer():
             'rewards': reward_score,
             'input_ids': seq,
             'attention_mask': attention_mask,
-            'ppl': ppl
+            'ppl': [ppl]
         }
     
     def parsing_selection(self, start, seq, constituent_tree=None):
@@ -273,11 +277,12 @@ class DeepSpeedPPOTrainer():
             local_ma_lengths = [start + start_offset + item for item in local_sequence]
             start_offset += len(tokens)
             ma_lengths += local_ma_lengths
-        # if int(seq.size(1) - 2) < ma_lengths[-1]:
-        #     raise IndexError(f'{int(seq.size(1) - 2)} < {ma_lengths[-1]}, {ma_lengths}')
+        if int(seq.size(1) - 2) < ma_lengths[-1]:
+            raise IndexError(f'{int(seq.size(1) - 2)} < {ma_lengths[-1]}, {ma_lengths}')
         if int(seq.size(1) - 2) not in ma_lengths:
             ma_lengths.append(int(seq.size(1) - 2))
         ma_lengths = list(set(ma_lengths))
+        ma_lengths = sorted(ma_lengths)
         return ma_lengths
     
     def fixed_ngram_selection(self, start, mask):
@@ -315,10 +320,12 @@ class DeepSpeedPPOTrainer():
     
     def ppl_selection(self, start, mask, ppl):
         assert ppl is not None
-        ma_length = [start]
+        ma_length = []
         for i in range(len(ppl) - 1):
             if ppl[i + 1] > ppl[i]:
                 ma_length.append(start + i)
+        if start not in ma_length:
+            ma_length = [start] + ma_length
         ma_length.append(mask.size(1) - 1)
         return ma_length
             
