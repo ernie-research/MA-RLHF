@@ -1,6 +1,6 @@
-# MA-RLHF: Reinforcement Learning from Human Feedback with Macro Actions
+# [MA-RLHF: Reinforcement Learning from Human Feedback with Macro Actions](https://arxiv.org/pdf/2410.02743)
 
-This repository contains the source code for reproducing the MA-RLHF (PPO). We implement MA-RLHF on the basic of DeepSpeed-Chat tookits.
+This repository contains the source code for reproducing the [MA-RLHF](https://arxiv.org/pdf/2410.02743). We implement MA-RLHF based on DeepSpeed-Chat.
 
 ## Get Started
 
