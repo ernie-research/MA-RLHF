@@ -15,7 +15,7 @@ from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
 from deepspeed.accelerator import get_accelerator
 from deepspeed import DeepSpeedEngine
 import torch.nn as nn
-
+from redbaron import RedBaron
 
 def print_rank_0(msg, rank=None):
     if rank is not None and rank <= 0:
@@ -354,3 +354,56 @@ def unwrap_model_for_generation(
         remove_hooks(model)
         yield model
         add_hooks(model)
+
+def parse_code(code):
+    red = RedBaron(code)
+    chunks = []
+
+    def process_node(node):
+        global previous_type
+        if node.previous and node.previous.type == "endl":
+            if previous_type == "endl":
+                chunks[-1] += node.previous.dumps()
+            else:
+                chunks.append(node.previous.dumps())
+        previous_type = node.type
+
+        if node.type == "assignment":  # Handle assignments
+            chunks.append(node.dumps())
+        elif node.type == "for":  # Handle loops
+            chunks.append(f"for {node.iterator.dumps()} in {node.target.dumps()}:")
+            for child in node.value:
+                process_node(child)
+        elif node.type == "if":  # Handle conditionals
+            chunks.append(f"if {node.test.dumps()}:")
+            for child in node.value:
+                process_node(child)
+            if node.orelse:
+                chunks.append("else:")
+                for child in node.orelse:
+                    process_node(child)
+        elif node.type == "def":  # Handle function definitions
+            chunks.append(f"def {node.name}(" + ", ".join(arg.dumps() for arg in node.arguments) + "):")
+            for child in node.value:
+                process_node(child)
+        elif node.type == "call":  # Handle function calls
+            chunks.append(node.dumps())
+        elif node.type == "expression":  # Handle standalone expressions
+            chunks.append(node.dumps())
+        elif node.type == "pass":  # Handle pass statements
+            chunks.append("pass")
+        elif node.type == "return":  # Handle return statements
+            chunks.append(f"return {node.value.dumps() if node.value else ''}")
+        elif node.type == "endl":
+            if previous_type == "endl":
+                chunks[-1] += node.dumps()
+            else:
+                chunks.append(node.previous.dumps())
+        else:
+            chunks.append(node.dumps())  # Fallback for unhandled node types
+            
+    # Process top-level nodes
+    for node in red:
+        process_node(node)
+
+    return chunks

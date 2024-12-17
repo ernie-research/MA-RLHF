@@ -9,7 +9,7 @@ import deepspeed
 from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
 from deepspeed.accelerator import get_accelerator
 
-from dschat.utils.utils import print_rank_0, unwrap_model_for_generation
+from dschat.utils.utils import print_rank_0, unwrap_model_for_generation, parse_code
 
 def print_all_ranks(tag, value, rank):
     world_size = torch.distributed.get_world_size()
@@ -206,84 +206,20 @@ class DeepSpeedPPOTrainer():
             'ppl': [ppl]
         }
     
-    def parsing_selection(self, start, seq, constituent_tree=None):
-        assert self.parser_cutoff is not None, "Please specify the parser cutoff with --parser-cutoff for parsing based selection"
-        import re
-        def reconstruct_tokenize(leaves):
-            # This function is used to migitage the gap between parser tokenizer and policy tokenizer
-            tree_tokens = []
-            start_pos = 0
-            for token in leaves:
-                match_pos = sentence.find(token, start_pos)
-                before = sentence[match_pos - 1] if match_pos > 0 else ''
-                start_pos = match_pos + len(token)
-                if before == ' ':
-                    tree_tokens.extend(self.tokenizer.tokenize(before + token))
-                else:
-                    tree_tokens.extend(self.tokenizer.tokenize(token))
-            return tree_tokens
-
-        def dfs(cur_tree, passed_tokens):
-            leaves = cur_tree.leaves()
-            if len(leaves) == 1: # rule 2: nodes with single token is a part of the last macro action
-                return False, passed_tokens + len(reconstruct_tokenize(leaves))
-            token_of_leaves = len(reconstruct_tokenize(leaves))
-            if token_of_leaves < self.parser_cutoff: # rule 1: nodes with fewer than cutoff tokens are treated as a macro action
-                local_sequence.append(passed_tokens + token_of_leaves)
-                passed_tokens += token_of_leaves
-                return True, passed_tokens
-            else:
-                for nxt_tree in cur_tree:
-                    state, _passed_tokens = dfs(nxt_tree, passed_tokens)
-                    if state == False:
-                        local_sequence[-1] = _passed_tokens
-                    passed_tokens = _passed_tokens
-                return True, passed_tokens
-
-        sequences = self.tokenizer.batch_decode(seq[:, start + 1:], skip_special_tokens=True)[0]
-        sentence_endings = re.compile(r'(?<=[.!?]) +|\n')
-        sentences = sentence_endings.split(sequences)
-        ends = sentence_endings.findall(sequences)
-        ma_lengths = []
-        start_offset = 0
-        for idx, sentence in enumerate(sentences):
-            if sentence == '':
-                continue
-            passed_tokens = 0
-            end = ''
-            if idx > 0:
-                end = ends[idx - 1]
-                
-            if '\n' in end:
-                passed_tokens == len(self.tokenizer.tokenize(end))
-                end = ''
-
-            sentence = end + sentence # tokenizer("\nHello") and tokenizer("Hello") will have different token length
-            tokens = self.tokenizer.tokenize(sentence)
-            
-            tree_dyn = constituent_tree.parse(sentence)
-            tree = tree_dyn.nltk_tree
-            
-            tree_tokens = reconstruct_tokenize(tree.leaves())
-            
-            # Check: the tokenization of the parser and the policy should be the same, otherwise, fall back to the vanilla PPO
-            if len(tokens) != len(tree_tokens):
-                raise IndexError("The tokenization of the parser and the policy are not the same.")
-    
-            local_sequence = [0]
-            _, passed_tokens = dfs(tree, passed_tokens)
-            if 0 not in local_sequence: # Process the start position
-                local_sequence = [0] + local_sequence
-            local_ma_lengths = [start + start_offset + item for item in local_sequence]
-            start_offset += len(tokens)
-            ma_lengths += local_ma_lengths
-        if int(seq.size(1) - 2) < ma_lengths[-1]:
-            raise IndexError(f'{int(seq.size(1) - 2)} < {ma_lengths[-1]}, {ma_lengths}')
-        if int(seq.size(1) - 2) not in ma_lengths:
-            ma_lengths.append(int(seq.size(1) - 2))
-        ma_lengths = list(set(ma_lengths))
-        ma_lengths = sorted(ma_lengths)
-        return ma_lengths
+    def parsing_selection(self, start, seq):
+        ans = self.tokenizer.batch_decode(seq[:, start + 1], skip_special_tokens=True)
+        chunks = parse_code(ans)
+        tokens = self.tokenizer.tokenize(ans)
+        idx = 0
+        ma_length = [start]
+        for chunk in chunks:
+            tokenized_chunk = self.tokenizer.tokenize(chunk)
+            for chunk_token in tokenized_chunk:
+                if chunk_token != tokens[idx]:
+                    raise IndexError
+                idx += 1
+            ma_length.append(start + idx)
+        return [ma_length]
     
     def fixed_ngram_selection(self, start, mask):
         assert self.ngram is not None, "Please specify the n-gram length with --ngram for fixed n-gram selection"
@@ -406,7 +342,7 @@ class DeepSpeedPPOTrainer():
             elif self.termination_condition == 'ppl':
                 ma_lengths = self.ppl_selection(start, action_mask, ppl)
             elif self.termination_condition == 'parsing':
-                ma_lengths = self.parsing_selection(start, seq, constituent_tree)
+                ma_lengths = self.parsing_selection(start, seq)
             # calculate MA_values and MA_rewards
             macro_action_values = self.modeling_macro_action(old_values, action_mask, start, ma_lengths)
             # NOTE: when modeling macro action rewards, we need to guarantee that the length of the last macro action is equal to 1, otherwise the rewards will also involved in calculation.
