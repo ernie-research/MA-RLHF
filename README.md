@@ -1,6 +1,24 @@
-# [MA-RLHF: Reinforcement Learning from Human Feedback with Macro Actions](https://arxiv.org/pdf/2410.02743)
+# [ICLR'25 | MA-RLHF: Reinforcement Learning from Human Feedback with Macro Actions](https://arxiv.org/pdf/2410.02743)
 
-This repository contains the source code for reproducing the [MA-RLHF](https://arxiv.org/pdf/2410.02743). We implement MA-RLHF based on DeepSpeed-Chat.
+   <a href="https://huggingface.co/baidu" target="_blank">
+      <img alt="Models" src="https://img.shields.io/badge/🤗-Models-blue" />
+   </a>
+  <a href="https://arxiv.org/abs/2410.02743" target="_blank">
+      <img alt="Paper" src="https://img.shields.io/badge/📜-Paper-purple" />
+   </a>
+  <a href="https://iclr.cc/Conferences/2024" target="_blank">
+      <img alt="ICLR 2025" src="https://img.shields.io/badge/Proceedings-ICLR2025-red" />
+   </a>
+
+
+
+The official repository which contains the source code for our paper [MA-RLHF](https://arxiv.org/pdf/2410.02743).
+
+
+## 🔥 News
+* **22 February, 2025:** 🎉 We release the official codebase ([`ernie-research/MA-RLHF`](https://github.com/ernie-research/MA-RLHF/)). Stay tuned!🔥
+* **22 February, 2025:** 🎉 Our work has been accepted to [ICLR 2025](https://iclr.cc/Conferences/2025)! 
+
 
 ## Get Started
 
@@ -163,3 +181,13 @@ python evaluation/human-eval.py \
     --output ${PROJ_PATH}/results/${dataset}/human-${actor_model_name_a}-v.s.-${actor_model_name_b}.jsonl
 ```
 
+### Citation
+
+```
+@article{chai2024ma,
+  title={MA-RLHF: Reinforcement Learning from Human Feedback with Macro Actions},
+  author={Chai, Yekun and Sun, Haoran and Fang, Huang and Wang, Shuohuan and Sun, Yu and Wu, Hua},
+  journal={arXiv preprint arXiv:2410.02743},
+  year={2024}
+}
+```
