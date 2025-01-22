@@ -16,8 +16,8 @@ The official repository which contains the source code for our paper [MA-RLHF](h
 
 
 ## 🔥 News
-* **22 February, 2025:** 🎉 We release the official codebase ([`ernie-research/MA-RLHF`](https://github.com/ernie-research/MA-RLHF/)). Stay tuned!🔥
-* **22 February, 2025:** 🎉 Our work has been accepted to [ICLR 2025](https://iclr.cc/Conferences/2025)! 
+* **22 January, 2025:** 🎉 We release the official codebase ([`ernie-research/MA-RLHF`](https://github.com/ernie-research/MA-RLHF/)). Stay tuned!🔥
+* **22 January, 2025:** 🎉 Our work has been accepted to [ICLR 2025](https://iclr.cc/Conferences/2025)! 
 
 
 ## Get Started
