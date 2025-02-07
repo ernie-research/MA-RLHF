@@ -184,10 +184,11 @@ python evaluation/human-eval.py \
 ### Citation
 
 ```
-@article{chai2024ma,
-  title={MA-RLHF: Reinforcement Learning from Human Feedback with Macro Actions},
-  author={Chai, Yekun and Sun, Haoran and Fang, Huang and Wang, Shuohuan and Sun, Yu and Wu, Hua},
-  journal={arXiv preprint arXiv:2410.02743},
-  year={2024}
+@inproceedings{chai2025marlhf,
+   title={{MA}-{RLHF}: Reinforcement Learning from Human Feedback with Macro Actions},
+   author={Yekun Chai and Haoran Sun and Huang Fang and Shuohuan Wang and Yu Sun and Hua Wu},
+   booktitle={The Thirteenth International Conference on Learning Representations},
+   year={2025},
+   url={https://openreview.net/forum?id=WWXjMYZxfH}
 }
 ```
