@@ -3,10 +3,10 @@
    <a href="https://huggingface.co/baidu" target="_blank">
       <img alt="Models" src="https://img.shields.io/badge/🤗-Models-blue" />
    </a>
-  <a href="https://arxiv.org/abs/2410.02743" target="_blank">
+  <a href="https://openreview.net/forum?id=WWXjMYZxfH" target="_blank">
       <img alt="Paper" src="https://img.shields.io/badge/📜-Paper-purple" />
    </a>
-  <a href="https://iclr.cc/Conferences/2024" target="_blank">
+  <a href="https://iclr.cc/Conferences/2025" target="_blank">
       <img alt="ICLR 2025" src="https://img.shields.io/badge/Proceedings-ICLR2025-red" />
    </a>
 
