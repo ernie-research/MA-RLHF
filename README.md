@@ -12,7 +12,7 @@
 
 
 
-The official repository which contains the source code for our paper [MA-RLHF](https://arxiv.org/pdf/2410.02743).
+The official repository which contains the source code for our paper [MA-RLHF](https://openreview.net/pdf?id=WWXjMYZxfH).
 
 
 ## 🔥 News
