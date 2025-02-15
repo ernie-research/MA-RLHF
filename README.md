@@ -1,7 +1,7 @@
-# [ICLR'25 | MA-RLHF: Reinforcement Learning from Human Feedback with Macro Actions](https://arxiv.org/pdf/2410.02743)
+# [ICLR'25 | MA-RLHF: Reinforcement Learning from Human Feedback with Macro Actions](https://openreview.net/pdf?id=WWXjMYZxfH)
 
-   <a href="https://huggingface.co/baidu" target="_blank">
-      <img alt="Models" src="https://img.shields.io/badge/🤗-Models-blue" />
+   <a href="https://huggingface.co/collections/baidu/macro-action-rlhf-6720aca274ec77d578fea9e3" target="_blank">
+      <img alt="Huggingface" src="https://img.shields.io/badge/🤗-Huggingface-blue" />
    </a>
   <a href="https://openreview.net/forum?id=WWXjMYZxfH" target="_blank">
       <img alt="Paper" src="https://img.shields.io/badge/📜-Paper-purple" />
